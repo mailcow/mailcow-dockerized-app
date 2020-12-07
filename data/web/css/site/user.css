@@ -1,0 +1,69 @@
+table.footable>tbody>tr.footable-empty>td {
+  font-size:15px !important;
+  font-style:italic;
+}
+.pagination a {
+  text-decoration: none !important;
+}
+.panel.panel-default {
+  overflow: visible !important;
+}
+.table-responsive {
+  overflow: visible !important;
+}
+@media screen and (max-width: 767px) {
+  .table-responsive {
+    overflow-x: scroll !important;
+  }
+}
+.footer-add-item {
+  display:block;
+  text-align: center;
+  font-style: italic;
+  padding: 10px;
+  background: #F5F5F5;
+}
+.mass-actions-user {
+  user-select: none;
+  padding:10px 0;
+}
+.inputMissingAttr {
+  border-color: #FF4136;
+}
+#logText {
+  white-space: pre-wrap;
+  white-space: -moz-pre-wrap;
+  white-space: -o-pre-wrap;
+  word-wrap: break-word;
+}
+body {
+  overflow-y:scroll;
+}
+
+table tbody tr {
+  cursor: pointer;
+}
+
+table tbody tr td input[type="checkbox"] {
+  cursor: pointer;
+}
+.rotate {
+  -moz-transition: all 0.3s linear;
+  -webkit-transition: all 0.3s linear;
+  transition: all 0.3s linear;
+}
+.rotate.animation {
+  -ms-transform:rotateX(180deg);
+  -moz-transform:rotateX(180deg);
+  -webkit-transform:rotateX(180deg);
+  transform:rotateX(180deg);
+}
+.label-keys {
+  font-size:100%;
+  margin: 0px !important;
+  white-space: normal !important;
+}
+.key-action {
+  font-weight:bold;
+  color:white !important;
+}

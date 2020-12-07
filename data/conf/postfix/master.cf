@@ -1,0 +1,145 @@
+# inter-mx with postscreen on 25/tcp
+smtp       inet  n       -       n       -       1       postscreen
+10025      inet  n       -       n       -       1       postscreen
+  -o postscreen_upstream_proxy_protocol=haproxy
+  -o syslog_name=haproxy
+smtpd      pass  -       -       n       -       -       smtpd
+  -o smtpd_helo_restrictions=permit_mynetworks,reject_non_fqdn_helo_hostname
+  -o smtpd_sasl_auth_enable=no
+  -o smtpd_sender_restrictions=permit_mynetworks,reject_unlisted_sender,reject_unknown_sender_domain
+
+# smtpd tls-wrapped (smtps) on 465/tcp
+# TLS protocol can be modified by setting smtps_smtpd_tls_mandatory_protocols in extra.cf
+smtps    inet  n       -       n       -       -       smtpd
+  -o smtpd_tls_wrappermode=yes
+  -o smtpd_client_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+  -o smtpd_tls_mandatory_protocols=$smtps_smtpd_tls_mandatory_protocols
+  -o tls_preempt_cipherlist=yes
+  -o cleanup_service_name=smtp_sender_cleanup
+  -o syslog_name=postfix/smtps
+  -o smtpd_end_of_data_restrictions=$smtpd_last_auth
+10465    inet  n       -       n       -       -       smtpd
+  -o smtpd_upstream_proxy_protocol=haproxy
+  -o smtpd_tls_wrappermode=yes
+  -o smtpd_client_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+  -o smtpd_tls_mandatory_protocols=$smtps_smtpd_tls_mandatory_protocols
+  -o tls_preempt_cipherlist=yes
+  -o cleanup_service_name=smtp_sender_cleanup
+  -o syslog_name=postfix/smtps-haproxy
+  -o smtpd_end_of_data_restrictions=$smtpd_last_auth
+
+# smtpd with starttls on 587/tcp
+# TLS protocol can be modified by setting submission_smtpd_tls_mandatory_protocols in extra.cf
+submission inet n       -       n       -       -       smtpd
+  -o smtpd_client_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+  -o smtpd_enforce_tls=yes
+  -o smtpd_tls_security_level=encrypt
+  -o smtpd_tls_mandatory_protocols=$submission_smtpd_tls_mandatory_protocols
+  -o tls_preempt_cipherlist=yes
+  -o cleanup_service_name=smtp_sender_cleanup
+  -o syslog_name=postfix/submission
+  -o smtpd_end_of_data_restrictions=$smtpd_last_auth
+10587      inet n       -       n       -       -       smtpd
+  -o smtpd_upstream_proxy_protocol=haproxy
+  -o smtpd_client_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+  -o smtpd_enforce_tls=yes
+  -o smtpd_tls_security_level=encrypt
+  -o smtpd_tls_mandatory_protocols=$submission_smtpd_tls_mandatory_protocols
+  -o tls_preempt_cipherlist=yes
+  -o cleanup_service_name=smtp_sender_cleanup
+  -o syslog_name=postfix/submission-haproxy
+  -o smtpd_end_of_data_restrictions=$smtpd_last_auth
+
+# used by SOGo
+# smtpd_sender_restrictions should match main.cf, but with check_sasl_access prepended for login-as-mailbox-user function
+588 inet n      -       n       -       -       smtpd
+  -o smtpd_client_restrictions=permit_mynetworks,permit_sasl_authenticated,reject
+  -o smtpd_tls_auth_only=no
+  -o smtpd_sender_restrictions=check_sasl_access,regexp:/opt/postfix/conf/allow_mailcow_local.regexp,reject_authenticated_sender_login_mismatch,permit_mynetworks,permit_sasl_authenticated,reject_unlisted_sender,reject_unknown_sender_domain
+  -o cleanup_service_name=smtp_sender_cleanup
+  -o syslog_name=postfix/sogo
+  -o smtpd_end_of_data_restrictions=$smtpd_last_auth
+
+# used to reinject quarantine mails
+590 inet n      -       n       -       -       smtpd
+  -o smtpd_helo_restrictions=
+  -o smtpd_client_restrictions=permit_mynetworks,reject
+  -o smtpd_tls_auth_only=no
+  -o smtpd_milters=
+  -o non_smtpd_milters=
+  -o syslog_name=postfix/quarantine
+  -o smtpd_end_of_data_restrictions=$smtpd_last_auth
+
+# enforced smtp connector
+smtp_enforced_tls      unix  -       -       n       -       -       smtp
+  -o smtp_tls_security_level=encrypt
+  -o syslog_name=enforced-tls-smtp
+  -o smtp_delivery_status_filter=pcre:/opt/postfix/conf/smtp_dsn_filter
+
+# smtp connector used, when a transport map matched
+# this helps to have different sasl maps than we have with sender dependent transport maps
+smtp_via_transport_maps      unix  -       -       n       -       -       smtp
+  -o smtp_sasl_password_maps=proxy:mysql:/opt/postfix/conf/sql/mysql_sasl_passwd_maps_transport_maps.cf
+
+tlsproxy   unix  -       -       n       -       0       tlsproxy
+dnsblog    unix  -       -       n       -       0       dnsblog
+pickup     fifo  n       -       n       60      1       pickup
+cleanup    unix  n       -       n       -       0       cleanup
+qmgr       fifo  n       -       n       300     1       qmgr
+tlsmgr     unix  -       -       n       1000?   1       tlsmgr
+rewrite    unix  -       -       n       -       -       trivial-rewrite
+bounce     unix  -       -       n       -       0       bounce
+defer      unix  -       -       n       -       0       bounce
+trace      unix  -       -       n       -       0       bounce
+verify     unix  -       -       n       -       1       verify
+flush      unix  n       -       n       1000?   0       flush
+proxymap   unix  -       -       n       -       -       proxymap
+proxywrite unix  -       -       n       -       1       proxymap
+smtp       unix  -       -       n       -       -       smtp
+relay      unix  -       -       n       -       -       smtp
+showq      unix  n       -       n       -       -       showq
+error      unix  -       -       n       -       -       error
+retry      unix  -       -       n       -       -       error
+discard    unix  -       -       n       -       -       discard
+local      unix  -       n       n       -       -       local
+virtual    unix  -       n       n       -       -       virtual
+lmtp       unix  -       -       n       -       -       lmtp
+anvil      unix  -       -       n       -       1       anvil
+scache     unix  -       -       n       -       1       scache
+maildrop   unix  -       n       n       -       -       pipe flags=DRhu
+    user=vmail argv=/usr/bin/maildrop -d ${recipient}
+
+# used to anonymize sender IP
+smtp_sender_cleanup unix n - y - 0 cleanup
+  -o header_checks=$smtp_header_checks
+
+# start whitelist_fwd
+127.0.0.1:10027 inet n n n - 0 spawn user=nobody argv=/usr/local/bin/whitelist_forwardinghosts.sh
+127.0.0.1:10028 inet n n n - 0 spawn user=nobody argv=/usr/local/bin/smtpd_last_login.sh
+# end whitelist_fwd
+
+# start watchdog-specific
+# logs to local7 (hidden)
+589 inet n      -       n       -       -       smtpd
+  -o smtpd_client_restrictions=permit_mynetworks,reject
+  -o syslog_name=watchdog
+  -o syslog_facility=local7
+  -o smtpd_milters=
+  -o cleanup_service_name=watchdog_cleanup
+  -o non_smtpd_milters=
+watchdog_cleanup unix  n       -       n       -       0       cleanup
+  -o syslog_name=watchdog
+  -o syslog_facility=local7
+  -o queue_service_name=watchdog_qmgr
+watchdog_qmgr fifo  n       -       n       300     1       qmgr
+  -o syslog_facility=local7
+  -o syslog_name=watchdog
+  -o rewrite_service_name=watchdog_rewrite
+watchdog_rewrite    unix  -       -       n       -       -       trivial-rewrite
+   -o syslog_facility=local7
+   -o syslog_name=watchdog
+   -o local_transport=watchdog_discard
+watchdog_discard    unix  -       -       n       -       -       discard
+   -o syslog_facility=local7
+   -o syslog_name=watchdog
+# end watchdog-specific
