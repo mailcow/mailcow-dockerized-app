@@ -547,6 +547,96 @@ services:
       volumes:
         - /var/run/docker.sock:/var/run/docker.sock:ro
         - /lib/modules:/lib/modules:ro
+    
+    frontend:
+      image: mailcow-frontend:0.1.0
+      build:
+        context: ./data/Dockerfiles/frontend
+        target: 'production-stage'
+      ports:
+      - '8780:8080'
+      - '8080:80'
+      - '8443:443'
+      volumes:
+      # - './data/Dockerfiles/frontend/source/:/app' # Disable in production or build stage
+      - '/app/node_modules'
+      # command: /bin/sh -c "npm run serve"
+      networks:
+        mailcow-network:
+          aliases:
+            - frontend
+    
+    backend:
+        build:
+          context: ./data/Dockerfiles/backend
+          target: 'develop-stage'
+        environment:
+          # Database Settings
+          - DATABASE_TYPE=mysql
+          - DATABASE_HOST=mysql
+          - DATABASE_PORT=3306
+          - DATABASE_USER=root
+          - DATABASE_PASSWD=${DBROOT}
+          - DATABASE_NAME=${DBNAME}
+          # SMTP Settings
+          - SMTP_HOST=postfix
+          - SMTP_SEC_CONN=true
+          - SMTP_PORT=${SMTP_PORT}
+          - SMTPS_PORT=${SMTPS_PORT}
+          # IMAP Settings
+          - IMAP_HOST=dovecot
+          - IMAP_SEC_CONN=true
+          - IMAP_PORT=${IMAP_PORT}
+          - IMAPS_PORT=${IMAPS_PORT}
+          # Sycn_engine Settings
+          - SYNC_ENGINE_HOST=syncengine
+          - SYNC_ENGINE_PORT=5555
+          - SSL=false
+        ports:
+        - '8090:8090'
+        volumes:
+        - './data/Dockerfiles/backend/source/:/app'
+        command: /bin/sh -c "python server.py"
+        networks:
+          mailcow-network:
+            aliases:
+              - backend
+
+    sync-engine-mailcow:
+      image: mailcow-sync-engine:1.1.0
+      build: ./data/Dockerfiles/syncengine
+      depends_on:
+        - mysql-mailcow
+        - redis-mailcow
+      environment:
+        - MYSQL_ENV_MYSQL_ROOT_PASSWORD=${DBROOT}
+        - MYSQL_PORT_3306_TCP_PORT=3306
+      volumes:
+        - sync-engine-vol-1:/var/lib/inboxapp/
+      hostname: sync-engine
+      restart: always
+      ports:
+        - "5755:5555"
+        - "5756:5556"
+        - "3714:3114"
+      dns:
+        - ${IPV4_NETWORK:-172.22.1}.254
+      networks:
+        mailcow-network:
+          aliases:
+            - syncengine
+     
+    adminer:
+      image: adminer
+      restart: always
+      dns:
+        - ${IPV4_NETWORK:-172.22.1}.254
+      ports:
+        - "8088:8080"
+      networks:
+        mailcow-network:
+          aliases:
+            - adminer
 
 networks:
   mailcow-network:
@@ -572,3 +662,4 @@ volumes:
   crypt-vol-1:
   sogo-web-vol-1:
   sogo-userdata-backup-vol-1:
+  sync-engine-vol-1:
