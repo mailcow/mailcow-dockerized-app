@@ -1,0 +1,9 @@
+[submodule "data/Dockerfiles/frontend/source"]
+	path = data/Dockerfiles/frontend/source
+	url = https://github.com/mailcow/cow-frontend.git
+[submodule "data/Dockerfiles/backend/source"]
+	path = data/Dockerfiles/backend/source
+	url = https://github.com/mailcow/cow-app.git
+[submodule "data/Dockerfiles/syncengine/sync-engine"]
+	path = data/Dockerfiles/syncengine/sync-engine
+	url = https://github.com/closeio/sync-engine.git
