@@ -1,3 +1,7 @@
+# ⚠️ATTENTION⚠️ 
+This repo is using for development purposes of CowUI. So do not use it instead of original mailcow-dockerized!
+
+
 # mailcow: dockerized - 🐮 + 🐋 = 💕
 
 ## Want to support mailcow?
