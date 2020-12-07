@@ -1,0 +1,40 @@
+#!/usr/bin/expect
+
+set timeout 20
+
+set email [lindex $argv 0]
+set password [lindex $argv 1]
+
+spawn su inbox -c "/opt/sync-engine/bin/inbox-auth $email"
+
+expect "IMAP account? *"
+send "Y\n"
+
+expect "IMAP server host: "
+send "dovecot\n"
+
+expect "IMAP server port: "
+send "143\n"
+
+expect "IMAP username (empty for same as email address): "
+send "\n"
+
+expect "IMAP password for $email"
+send "$password\n"
+
+expect "SMTP server host: "
+send "postfix\n"
+
+expect "SMTP server port: "
+send "587\n"	
+
+expect "SMTP username (empty for same as email address):"
+send "\n"	
+
+expect "SMTP password for $email (empty for same as IMAP): "
+send "$password\n"	
+
+expect "Require SSL? *"
+send "Y\n"	
+
+interact
