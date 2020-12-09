@@ -1,0 +1,7 @@
+# Skip logging for these addresses
+/monitoring-system@everycloudtech\.us/i
+/monitor@tools\.mailflowmonitoring\.com/i
+/watchdog@localhost/i
+/supertool@mxtoolbox\.com/i
+/test@mxtoolboxsmtpdiag\.com/i
+/open-relay-check@mailcow\.email/i
