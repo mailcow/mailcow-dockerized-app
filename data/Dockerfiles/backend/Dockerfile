@@ -9,3 +9,6 @@ RUN /usr/local/bin/python -m pip install --upgrade pip
 RUN pip install --no-cache-dir -r requirements.txt
 ENV FLASK_ENV="docker"
 
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
