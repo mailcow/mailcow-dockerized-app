@@ -1,7 +1,10 @@
 FROM python:3.6 as develop-stage
 LABEL maintainer "Zekeriya Akgül <zkry.akgul@gmail.com>"
 
-RUN apt-get update
+RUN DEBIAN_FRONTEND=noninteractive && apt-get update && apt-get dist-upgrade -y && apt-get install -y \
+	mariadb-client \
+	&& rm -rf /var/lib/apt/lists/*
+
 RUN mkdir /app
 WORKDIR /app
 COPY source/requirements.txt .
