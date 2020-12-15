@@ -570,6 +570,8 @@ services:
         context: ./data/Dockerfiles/backend
         target: 'develop-stage'
       environment:
+        # Flask Settings
+        - HOST=${MAILCOW_HOSTNAME}
         # Database Settings
         - DATABASE_TYPE=mysql
         - DATABASE_HOST=mysql
