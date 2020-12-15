@@ -571,7 +571,7 @@ services:
         target: 'develop-stage'
       environment:
         # Flask Settings
-        - HOST=${MAILCOW_HOSTNAME}
+        - HOST=backend
         # Database Settings
         - DATABASE_TYPE=mysql
         - DATABASE_HOST=mysql
@@ -593,10 +593,6 @@ services:
         - SYNC_ENGINE_HOST=syncengine
         - SYNC_ENGINE_PORT=5555
         - SSL=false
-      ports:
-      - '8090:8090'
-      extra_hosts:
-      - '${MAILCOW_HOSTNAME}:127.0.0.1'
       volumes:
       - './data/Dockerfiles/backend/source/:/app'
       networks:
