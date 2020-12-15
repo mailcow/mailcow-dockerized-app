@@ -595,6 +595,8 @@ services:
         - SSL=false
       ports:
       - '8090:8090'
+      extra_hosts:
+      - '${MAILCOW_HOSTNAME}:127.0.0.1'
       volumes:
       - './data/Dockerfiles/backend/source/:/app'
       networks:
