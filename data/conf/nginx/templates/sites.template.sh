@@ -11,6 +11,29 @@ server {
 
   include /etc/nginx/conf.d/includes/site-defaults.conf;
 }
+
+server {
+        listen 80;
+        listen [::]:80;
+
+        server_name  betaclient.'${MAILCOW_HOSTNAME}';
+
+        location ^~ / {
+          proxy_pass       http://frontend:80;
+          proxy_set_header Host      $http_host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_redirect off;
+        }
+        
+        location ^~ /app/ {
+          proxy_pass       http://backend:8090/;
+          proxy_set_header Host      $http_host;
+          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+          proxy_set_header X-Real-IP $remote_addr;
+          proxy_redirect off;
+        }
+}
 ';
 for cert_dir in /etc/ssl/mail/*/ ; do
   if [[ ! -f ${cert_dir}domains ]] || [[ ! -f ${cert_dir}cert.pem ]] || [[ ! -f ${cert_dir}key.pem ]]; then
