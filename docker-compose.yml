@@ -613,10 +613,6 @@ services:
         - sync-engine-vol-1:/var/lib/inboxapp/
       hostname: sync-engine
       restart: always
-      ports:
-        - "5755:5555"
-        - "5756:5556"
-        - "3714:3114"
       dns:
         - ${IPV4_NETWORK:-172.22.1}.254
       networks:
