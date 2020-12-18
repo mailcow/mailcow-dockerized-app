@@ -55,6 +55,8 @@ COPY supervisord.conf /etc/supervisor/supervisord.conf
 COPY docker-entrypoint.sh /usr/local/bin/
 
 EXPOSE 5555
+EXPOSE 5556
+EXPOSE 3114
 
 ENV \
   LANG="en_US.UTF-8" \

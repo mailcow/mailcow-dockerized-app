@@ -7,6 +7,6 @@ while ! mysqladmin ping -hmysql -p --password="$DATABASE_PASSWD" --silent; do
 done
 
 # Start the services
-/usr/bin/supervisord -n
+/usr/bin/supervisord -c /etc/supervisor/supervisord.conf -n 
 
 exec "$@"

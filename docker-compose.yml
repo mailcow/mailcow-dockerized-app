@@ -559,6 +559,7 @@ services:
       # - './data/Dockerfiles/frontend/source/:/app' # Disable in production or build stage
       - '/app/node_modules'
       # command: /bin/sh -c "npm run serve"
+      restart: always
       networks:
         mailcow-network:
           aliases:
@@ -570,6 +571,8 @@ services:
         context: ./data/Dockerfiles/backend
         target: 'develop-stage'
       environment:
+        # Flask Settings
+        - HOST=backend
         # Database Settings
         - DATABASE_TYPE=mysql
         - DATABASE_HOST=mysql
@@ -591,10 +594,9 @@ services:
         - SYNC_ENGINE_HOST=syncengine
         - SYNC_ENGINE_PORT=5555
         - SSL=false
-      ports:
-      - '8090:8090'
       volumes:
       - './data/Dockerfiles/backend/source/:/app'
+      restart: always
       networks:
         mailcow-network:
           aliases:
@@ -613,10 +615,6 @@ services:
         - sync-engine-vol-1:/var/lib/inboxapp/
       hostname: sync-engine
       restart: always
-      ports:
-        - "5755:5555"
-        - "5756:5556"
-        - "3714:3114"
       dns:
         - ${IPV4_NETWORK:-172.22.1}.254
       networks:
