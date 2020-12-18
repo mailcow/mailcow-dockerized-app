@@ -22,15 +22,16 @@ print_ok()
 # Wait for db come up
 cd /opt/sync-engine && bin/wait-for-it.sh mysql:3306
 
+FILE_TO_CHECK="/var/log/supervisor/sync_engine_inbox.log"
+LINE_TO_CONTAIN="Use CTRL-C to stop."
+SLEEP_TIME=10
+
 # Start the supervisord in foreground
 /usr/bin/supervisord -n &
-echo '' > sync_engine_inbox.log
+echo '' > $FILE_TO_CHECK
 
 while true
 do
-	FILE_TO_CHECK="/var/log/supervisor/sync_engine_inbox.log"
-	LINE_TO_CONTAIN="Use CTRL-C to stop."
-	SLEEP_TIME=10
 	CHECK_STATUS=""
 	while [ -z "${CHECK_STATUS}" ]
 	do
@@ -38,7 +39,7 @@ do
 		sleep ${SLEEP_TIME}
 		CHECK_STATUS=$(cat $FILE_TO_CHECK | grep "${LINE_TO_CONTAIN}")
 	done
-	print_ok "sync-engine is ready!"
+	print_ok "sync-engine is up!"
 
 	sync_engine_dbs=( "inbox" "inbox_1" "inbox_2" "inbox_3" )
 	created_dbs=()
@@ -66,7 +67,7 @@ do
 		do
 			mysql -hmysql -uroot -p$MYSQL_ENV_MYSQL_ROOT_PASSWORD -e "DROP DATABASE $db;"
 		done
-		echo '' > sync_engine_inbox.log
+		echo '' > $FILE_TO_CHECK
 		supervisorctl restart sync_engine_inbox
 		supervisorctl restart sync_engine_api
 	fi
