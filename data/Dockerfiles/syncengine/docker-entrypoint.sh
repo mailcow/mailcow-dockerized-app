@@ -41,7 +41,7 @@ do
 	done
 	print_ok "sync-engine is up!"
 
-	sync_engine_dbs=( "inbox" "inbox_1" "inbox_2" "inbox_3" )
+	sync_engine_dbs=( "inbox" "inbox_1" )
 	created_dbs=()
 	all_dbs_created=false
 	echo -ne "Checking whether sync-engine dbs have been created...\n"
