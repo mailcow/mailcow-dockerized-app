@@ -551,6 +551,9 @@ services:
       build:
         context: ./data/Dockerfiles/frontend
         target: 'production-stage'
+      depends_on:
+        - cowui-backend-mailcow
+        - sync-engine-mailcow
       ports:
       - '8780:8080'
       - '8080:80'
@@ -570,6 +573,8 @@ services:
       build:
         context: ./data/Dockerfiles/backend
         target: 'develop-stage'
+      depends_on:
+        - mysql-mailcow
       environment:
         # Flask Settings
         - HOST=backend
