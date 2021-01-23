@@ -600,6 +600,8 @@ services:
         - SYNC_ENGINE_HOST=syncengine
         - SYNC_ENGINE_PORT=5555
         - SSL=false
+        # General settings
+        - SKIP_SOGO=${SKIP_SOGO:-n}
       volumes:
       - './data/Dockerfiles/backend/source/:/app'
       restart: always
