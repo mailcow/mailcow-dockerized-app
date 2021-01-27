@@ -602,6 +602,7 @@ services:
         - SSL=false
         # General settings
         - SKIP_SOGO=${SKIP_SOGO:-n}
+        - MAILCOW_PASS_SCHEME=${MAILCOW_PASS_SCHEME:-BLF-CRYPT}
       volumes:
       - './data/Dockerfiles/backend/source/:/app'
       restart: always
