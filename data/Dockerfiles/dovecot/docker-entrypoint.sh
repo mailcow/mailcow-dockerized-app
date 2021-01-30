@@ -120,11 +120,11 @@ echo -n ${ACL_ANYONE} > /etc/dovecot/acl_anyone
 if [[ "${SKIP_SOLR}" =~ ^([yY][eE][sS]|[yY])+$ ]]; then
 echo -n 'quota acl zlib listescape mail_crypt mail_crypt_acl mail_log notify replication last_login' > /etc/dovecot/mail_plugins
 echo -n 'quota imap_quota imap_acl acl zlib imap_zlib imap_sieve listescape mail_crypt mail_crypt_acl notify replication mail_log last_login' > /etc/dovecot/mail_plugins_imap
-echo -n 'quota sieve acl zlib listescape mail_crypt mail_crypt_acl notify replication' > /etc/dovecot/mail_plugins_lmtp
+echo -n 'quota sieve acl zlib listescape mail_crypt mail_crypt_acl notify replication mail_lua push_notification push_notification_lua' > /etc/dovecot/mail_plugins_lmtp
 else
 echo -n 'quota acl zlib listescape mail_crypt mail_crypt_acl mail_log notify fts fts_solr replication last_login' > /etc/dovecot/mail_plugins
 echo -n 'quota imap_quota imap_acl acl zlib imap_zlib imap_sieve listescape mail_crypt mail_crypt_acl notify mail_log fts fts_solr replication last_login' > /etc/dovecot/mail_plugins_imap
-echo -n 'quota sieve acl zlib listescape mail_crypt mail_crypt_acl fts fts_solr notify replication' > /etc/dovecot/mail_plugins_lmtp
+echo -n 'quota sieve acl zlib listescape mail_crypt mail_crypt_acl fts fts_solr notify replication mail_lua push_notification push_notification_lua' > /etc/dovecot/mail_plugins_lmtp
 fi
 chmod 644 /etc/dovecot/mail_plugins /etc/dovecot/mail_plugins_imap /etc/dovecot/mail_plugins_lmtp /templates/quarantine.tpl
 
@@ -182,6 +182,41 @@ end
 function script_deinit()
   con:close()
   env:close()
+end
+EOF
+
+cat <<EOF > /etc/dovecot/lua/cowui_backend_hook.lua
+local http = require("socket.http")
+local url = require("socket.url")
+
+function table_get(t, k, d)
+  return t[k] or d
+end
+
+function dovecot_lua_notify_begin_txn(user)
+  return {messages={}, ep=user:plugin_getenv("push_lua_url"), username=user.username}
+end
+
+function dovecot_lua_notify_end_txn(ctx, success)
+  local i, msg = next(ctx["messages"], nil)
+  while i do
+    local r, c = http.request(ctx["ep"], "from=" .. url.escape(table_get(msg, "from", "")) .. "&to=" .. url.escape(table_get(msg, "to", "")) .. "&subject=" .. url.escape(table_get(msg, "subject", "")) .. "&snippet=" .. url.escape(table_get(msg, "snippet", "")) .. "&user=" .. url.escape(ctx["username"]))
+    if r and c/100 ~= 2 then
+      dovecot.i_error("lua-push: Remote error " .. tostring(c) .. " handling push notication")
+    end
+    if r == nil then
+      dovecot.i_error("lua-push: " .. c)
+    end
+    i, msg = next(ctx["messages"], i)
+  end
+end
+
+function dovecot_lua_notify_event_message_append(ctx, event)
+  table.insert(ctx["messages"], event)
+end
+
+function dovecot_lua_notify_event_message_new(ctx, event)
+  table.insert(ctx["messages"], event)
 end
 EOF
 
