@@ -35,7 +35,7 @@ WORKDIR /opt/sync-engine
 COPY ./sync-engine ./
 RUN find . -name \*.pyc -delete
 RUN pip install setuptools==44.0.0
-RUN pip install --upgrade pip
+RUN pip install pip==20.3.4
 RUN pip install -r requirements_frozen.txt -e .
 RUN useradd inbox && \
     mkdir -p /etc/inboxapp
