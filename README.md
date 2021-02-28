@@ -4,6 +4,32 @@ This repo is using for development purposes of CowUI. So do not use it instead o
 
 # mailcow: dockerized - 🐮 + 🐋 = 💕
 
+## How can you run it?
+
+- First you need to init submodules:
+```
+# Init submodules
+git submodule init
+
+# Get the latest commits
+git submodule update --remote --recursive
+```
+
+- After that you need the create mailcow config and build CowUI services:
+```
+# Generate the config
+./generate_config.sh
+
+# Build necessary services images locally
+docker-compose build cowui-backend-mailcow cowui-frontend-mailcow sync-engine-mailcow
+```
+
+- Last, pull remaining images and up the compose:
+```
+docker-compose pull 
+docker-compose up -d
+```
+
 ## Want to support mailcow?
 
 Please [consider a support contract with Servercow](https://www.servercow.de/mailcow?lang=en#support) to support further development. _We_ support _you_ while _you_ support _us_. :)
