@@ -106,6 +106,10 @@ $MAILCOW_APPS = array(
   array(
     'name' => 'Webmail',
     'link' => '/SOGo/',
+  ),
+  array(
+    'name' => 'CowUI',
+    'link' => '/betaclient/',
   )
 );
 
