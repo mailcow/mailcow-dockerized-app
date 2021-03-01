@@ -596,17 +596,17 @@ services:
       build:
         context: ./data/Dockerfiles/frontend
         target: 'production-stage'
+      environment:
+        - TZ=${TZ}
+        - VUE_APP_LOCATION=container
       depends_on:
         - cowui-backend-mailcow
         - sync-engine-mailcow
       ports:
-      - '8780:8080'
-      - '8080:80'
-      - '8443:443'
-      volumes:
+      - '8780:8780'
+      # volumes:
       # - './data/Dockerfiles/frontend/source/:/app' # Disable in production or build stage
-      - '/app/node_modules'
-      # command: /bin/sh -c "npm run serve"
+      # command: /bin/sh -c "npm run serve" # Disable in production or build stage
       restart: always
       networks:
         mailcow-network:
@@ -714,5 +714,4 @@ volumes:
   sogo-userdata-backup-vol-1:
   xmpp-vol-1:
   xmpp-upload-vol-1:
-
   sync-engine-vol-1:
