@@ -8,6 +8,9 @@ This repo is using for development purposes of CowUI. So do not use it instead o
 
 - First you need to init submodules:
 ```
+# Get the repo
+git clone https://github.com/mailcow/mailcow-dockerized-app.git && cd mailcow-dockerized-app/
+
 # Init submodules
 git submodule init
 
